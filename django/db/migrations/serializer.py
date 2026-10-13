@@ -16,7 +16,7 @@ from django.db import models
 from django.db.migrations.operations.base import Operation
 from django.db.migrations.utils import COMPILED_REGEX_TYPE, RegexObject
 from django.utils.functional import LazyObject, Promise
-from django.utils.version import get_docs_version
+from django.utils.version import PY311, get_docs_version
 
 
 class BaseSerializer:
@@ -125,8 +125,20 @@ class EnumSerializer(BaseSerializer):
     def serialize(self):
         enum_class = self.value.__class__
         module = enum_class.__module__
+        if self.value.name in enum_class.__members__:
+            members = [self.value]
+        elif PY311:
+            members = list(self.value)
+        else:
+            # A combination of flags has no name of its own. Split it into its
+            # members, in ascending order to match Python 3.11+.
+            members, _ = enum._decompose(enum_class, self.value)
+            members = reversed(members)
         return (
-            "%s.%s[%r]" % (module, enum_class.__qualname__, self.value.name),
+            " | ".join(
+                "%s.%s[%r]" % (module, enum_class.__qualname__, member.name)
+                for member in members
+            ),
             {"import %s" % module},
         )
 

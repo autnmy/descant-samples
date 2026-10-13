@@ -85,6 +85,13 @@ class IntFlagEnum(enum.IntFlag):
     B = 2
 
 
+class NamedFlagEnum(enum.Flag):
+    NONE = 0
+    A = 1
+    B = 2
+    BOTH = 3
+
+
 class OperationWriterTests(SimpleTestCase):
     def test_empty_signature(self):
         operation = custom_migration_operations.operations.TestOperation()
@@ -413,6 +420,43 @@ class WriterTests(SimpleTestCase):
             "(2, migrations.test_writer.IntFlagEnum['B'])], "
             "default=migrations.test_writer.IntFlagEnum['A'])",
         )
+        self.assertSerializedResultEqual(
+            IntFlagEnum.A | IntFlagEnum.B,
+            (
+                "migrations.test_writer.IntFlagEnum['A'] | "
+                "migrations.test_writer.IntFlagEnum['B']",
+                {"import migrations.test_writer"},
+            ),
+        )
+        self.assertSerializedEqual(IntFlagEnum.A | IntFlagEnum.B)
+        self.assertSerializedResultEqual(
+            re.IGNORECASE | re.UNICODE,
+            (
+                "re.RegexFlag['IGNORECASE'] | re.RegexFlag['UNICODE']",
+                {"import re"},
+            ),
+        )
+        self.assertSerializedEqual(re.IGNORECASE | re.UNICODE)
+
+    def test_serialize_named_enum_flags(self):
+        # Declared members keep their own name, even when their value is zero
+        # or a combination of other members.
+        self.assertSerializedResultEqual(
+            NamedFlagEnum.NONE,
+            (
+                "migrations.test_writer.NamedFlagEnum['NONE']",
+                {"import migrations.test_writer"},
+            ),
+        )
+        self.assertSerializedEqual(NamedFlagEnum.NONE)
+        self.assertSerializedResultEqual(
+            NamedFlagEnum.BOTH,
+            (
+                "migrations.test_writer.NamedFlagEnum['BOTH']",
+                {"import migrations.test_writer"},
+            ),
+        )
+        self.assertSerializedEqual(NamedFlagEnum.BOTH)
 
     def test_serialize_choices(self):
         class TextChoices(models.TextChoices):
