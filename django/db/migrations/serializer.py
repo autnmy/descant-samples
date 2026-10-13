@@ -5,6 +5,7 @@ import decimal
 import enum
 import functools
 import math
+import operator
 import os
 import pathlib
 import re
@@ -127,13 +128,24 @@ class EnumSerializer(BaseSerializer):
         module = enum_class.__module__
         if self.value.name in enum_class.__members__:
             members = [self.value]
-        elif PY311:
-            members = list(self.value)
         else:
             # A combination of flags has no name of its own. Split it into its
-            # members, in ascending order to match Python 3.11+.
-            members, _ = enum._decompose(enum_class, self.value)
-            members = reversed(members)
+            # members, in ascending order on every Python version.
+            if PY311:
+                members = list(self.value)
+            else:
+                members, _ = enum._decompose(enum_class, self.value)
+                members = list(reversed(members))
+            # Bits that no member covers, such as a zero value with no zero
+            # member, would otherwise be dropped from the written expression.
+            member_values = [member.value for member in members]
+            if not members or functools.reduce(operator.or_, member_values) != (
+                self.value.value
+            ):
+                raise ValueError(
+                    "Cannot serialize %r: it is not a combination of %s members."
+                    % (self.value, enum_class.__qualname__)
+                )
         return (
             " | ".join(
                 "%s.%s[%r]" % (module, enum_class.__qualname__, member.name)

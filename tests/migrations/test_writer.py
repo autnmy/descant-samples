@@ -458,6 +458,13 @@ class WriterTests(SimpleTestCase):
         )
         self.assertSerializedEqual(NamedFlagEnum.BOTH)
 
+    def test_serialize_enum_flags_without_members(self):
+        # A zero value with no zero member has no members to write.
+        with self.assertRaisesMessage(
+            ValueError, "is not a combination of IntFlagEnum members."
+        ):
+            MigrationWriter.serialize(IntFlagEnum(0))
+
     def test_serialize_choices(self):
         class TextChoices(models.TextChoices):
             A = "A", "A value"
