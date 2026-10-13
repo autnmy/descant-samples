@@ -192,7 +192,8 @@ Management Commands
 Migrations
 ~~~~~~~~~~
 
-* ...
+* Migrations now support serialization of enum flags combinations, such as
+  ``re.IGNORECASE | re.UNICODE``.
 
 Models
 ~~~~~~

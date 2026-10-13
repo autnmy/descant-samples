@@ -125,8 +125,39 @@ class EnumSerializer(BaseSerializer):
     def serialize(self):
         enum_class = self.value.__class__
         module = enum_class.__module__
+        if self.value.name in enum_class.__members__:
+            members = [self.value]
+        else:
+            # A combination of flags has no name of its own. Split it into
+            # declared members only, since Python versions differ in how they
+            # decompose flags and may yield unnamed members. Larger members are
+            # taken first so a declared multi-bit member covers its own bits.
+            value = self.value.value
+            members = []
+            covered = 0
+            declared = sorted(
+                set(enum_class.__members__.values()),
+                key=lambda member: member.value,
+                reverse=True,
+            )
+            for member in declared:
+                bits = member.value
+                if bits and bits & value == bits and bits & ~covered:
+                    members.append(member)
+                    covered |= bits
+            members.reverse()
+            # Bits that no member covers, such as a zero value with no zero
+            # member, would otherwise be dropped from the written expression.
+            if covered != value or not members:
+                raise ValueError(
+                    "Cannot serialize %r: it is not a combination of %s members."
+                    % (self.value, enum_class.__qualname__)
+                )
         return (
-            "%s.%s[%r]" % (module, enum_class.__qualname__, self.value.name),
+            " | ".join(
+                "%s.%s[%r]" % (module, enum_class.__qualname__, member.name)
+                for member in members
+            ),
             {"import %s" % module},
         )
 
