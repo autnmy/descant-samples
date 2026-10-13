@@ -92,6 +92,11 @@ class NamedFlagEnum(enum.Flag):
     BOTH = 3
 
 
+class GroupedFlagEnum(enum.Flag):
+    EXTRA = 4
+    GROUP = 3
+
+
 class OperationWriterTests(SimpleTestCase):
     def test_empty_signature(self):
         operation = custom_migration_operations.operations.TestOperation()
@@ -457,6 +462,19 @@ class WriterTests(SimpleTestCase):
             ),
         )
         self.assertSerializedEqual(NamedFlagEnum.BOTH)
+
+    def test_serialize_enum_flags_combined_members(self):
+        # Members are written in ascending value order whatever their
+        # declaration order, and a declared multi-bit member is kept whole.
+        self.assertSerializedResultEqual(
+            GroupedFlagEnum.GROUP | GroupedFlagEnum.EXTRA,
+            (
+                "migrations.test_writer.GroupedFlagEnum['GROUP'] | "
+                "migrations.test_writer.GroupedFlagEnum['EXTRA']",
+                {"import migrations.test_writer"},
+            ),
+        )
+        self.assertSerializedEqual(GroupedFlagEnum.GROUP | GroupedFlagEnum.EXTRA)
 
     def test_serialize_enum_flags_without_members(self):
         # A zero value with no zero member has no members to write, and 4 is a
