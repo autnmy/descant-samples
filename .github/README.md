@@ -16,4 +16,4 @@ The task is [issue #1](https://github.com/autnmy/descant-samples/issues/1), a re
 
 ## What it cost
 
-This run cost **$12.98** in credits and took about **67 minutes**, start to finish. See [pricing](https://descant.run/pricing) for what a typical pull request uses.
+This run cost **$12.98** and took about **67 minutes** from start to merge. That time includes waiting on CI runs, review rounds and the merge, not only model work. See [pricing](https://descant.run/pricing) for what a typical pull request uses.
