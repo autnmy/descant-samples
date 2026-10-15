@@ -1,6 +1,6 @@
 # Descant sample: one real run
 
-This repository holds one pull request that Descant planned, wrote, reviewed and merged on its own: [#2, "Serialize combinations of enum flags in migrations"](https://github.com/autnmy/descant-samples/pull/2). Everything on that pull request is exactly what Descant produced, shown as it happened and not edited for this page.
+This repository holds one pull request that Descant planned, wrote, reviewed and merged on its own: [#2, "Serialize combinations of enum flags in migrations"](https://github.com/autnmy/descant-samples/pull/2). Everything on that pull request is what Descant produced, as it happened. For this page, an internal run id and a link to our private dashboard were removed from the pull request description and from one issue comment; nothing else was changed.
 
 ## The task
 
